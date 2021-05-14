@@ -1,0 +1,78 @@
+<!doctype html>
+<head>
+  <title>First Service Worker</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="./main.js"></script>
+
+</head>
+
+<h1>Service Worker Test</h1>
+
+<output></output>
+
+<button onclick="update()">Update Check</button>
+<button onclick="unregister()">Unregister</button>
+<button onclick="postData()">Post Data</button>
+
+<button onclick="displayNotification()">Notification</button>
+
+<script>
+function postData() {
+  fetch("/api/data", {
+    method: "POST",
+    body: {
+      data: ["Chile", "USA", "China"]
+    }
+  })
+}
+
+function update() {
+  navigator.serviceWorker.getRegistration()
+    .then(registration => {
+      registration.update();
+    })
+}
+
+function unregister() {
+  navigator.serviceWorker.getRegistration()
+    .then(registration => {
+      registration.unregister();
+    })
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js')
+    .then(registration => {
+      const scope = registration.scope;
+      document.querySelector("output").innerHTML = `Service Worker registered properly at ${scope}`;
+    })
+    .catch (error => {
+      document.querySelector("output").innerHTML = "Service Worker not registered.";
+    })
+  }
+else {
+  document.querySelector("output").innerHTML = "Service Worker NOT available.";
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistration()
+    .then( registration => {
+      registration.addEventListener("updatefound", event => {
+        // Get new SW being installed
+        const swInstalling = registration.installing;
+        // 
+        swInstalling.addEventListener("statechange", () => {
+          if (swInstalling.state == 'Installed') {
+            document.querySelector("output").innerHTML = "A new service worker is installed and waiting.";
+          }
+          else {
+            document.querySelector("output").innerHTML = "A new service worker is now controlling the page.";
+          }
+        });
+      })
+    })
+    .catch( error => {
+
+    });
+}
+</script>
